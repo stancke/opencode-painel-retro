@@ -1,6 +1,11 @@
 {
-  "_comentario": "Opções do painel-retro (todas são OPCIONAIS). escalaBanner: 1 = banner de espera pequeno (padrão), 2 = dobrado. fps: ms por quadro da animação (60..1000). animacao: false desliga o robô e o banner.",
+  "_comentario": "Opções do painel-retro (todas são OPCIONAIS). escalaBanner: 1 = banner de espera pequeno (padrão), 2 = dobrado. fps: ms por quadro da animação (60..1000). animacao: false desliga o robô e o banner. contexto: barra de uso do contexto do modelo. git: status da árvore de trabalho; intervaloGit: ms entre cada git status. cronometro: tempo do turno + subagentes rodando. bloqueio: aviso de permissão/pergunta/fila.",
   "escalaBanner": 1,
   "fps": 140,
-  "animacao": true
+  "animacao": true,
+  "contexto": true,
+  "git": true,
+  "intervaloGit": 5000,
+  "cronometro": true,
+  "bloqueio": true
 }

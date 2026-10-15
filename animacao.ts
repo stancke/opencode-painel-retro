@@ -71,6 +71,37 @@ const BRACO_DIR = "▌"
 const COLUNA_BRACO_ESQ = 1
 const COLUNA_BRACO_DIR = 13
 
+/** Largura do robô pequeno (subagente). */
+const LARGURA_MINI = 9
+
+/** Altura do robô pequeno (subagente). */
+const ALTURA_MINI = 3
+
+/**
+ * Robô pequeno (subagente): 9 colunas x 3 linhas.
+ * Mesmo estilo quadrado, só que menor e sem braços.
+ */
+const MINI_BASE = [
+  [{ cor: "roboMini", texto: " ┌─────┐ " }],
+  [
+    { cor: "roboMini", texto: " │█" },
+    { cor: "olho", texto: "▀▀▀" },
+    { cor: "roboMini", texto: "█│ " },
+  ],
+]
+
+/** Pernas do robô pequeno: duas poses. */
+const MINI_PERNAS = [
+  [{ cor: "roboMini", texto: "  ▐█ █▌  " }],
+  [{ cor: "roboMini", texto: "  ▐▙ ▟▌  " }],
+]
+
+/** Distância mínima entre um robô e outro na cena. */
+const ESPACO_MINIMO = 16
+
+/** Máximo de robôs pequenos na cena (pra não virar bagunça). */
+const MAX_SUBAGENTES = 8
+
 /** Quantidade de gotas de chuva (proporcional à largura). */
 const GOTAS_POR_COLUNA = 2
 
@@ -79,6 +110,22 @@ const CHUVA_CHARS = ["│", ":", "."]
 
 /** Comprimento da cauda da gota. */
 const CAUDA_CHUVA = CHUVA_CHARS.length
+
+/** Margem fora da tela por robô: a trilha dá a volta com ele já escondido. */
+function trilhaDe(total, larguraRobo) {
+  return total + larguraRobo + 4
+}
+
+/** Posição horizontal do robô na trilha (volta a entrar pela esquerda). */
+function posicaoNaTrilha(posicao, total, larguraRobo) {
+  return modulo(posicao, trilhaDe(total, larguraRobo)) - larguraRobo - 2
+}
+
+/** Módulo positivo (a posição na trilha dá a volta). */
+function modulo(valor, tamanho) {
+  if (tamanho <= 0) return 0
+  return ((valor % tamanho) + tamanho) % tamanho
+}
 
 /** Ruído determinístico em [0, 1). */
 function ruido(n) {
@@ -204,17 +251,48 @@ function desenharRobo(linhas, x, passada, balanco) {
   desenharBraco(linhas, x, COLUNA_BRACO_DIR, topo, passada % 2 !== 0)
 }
 
+/** Desenha um robô pequeno (subagente) na posição `x` e no topo `topo`. */
+function desenharMini(linhas, x, topo, passada) {
+  for (let i = 0; i < MINI_BASE.length; i++) {
+    const linha = linhas[topo + i]
+    if (!linha) continue
+    let deslocamento = x
+    for (const pedaco of MINI_BASE[i]) {
+      linha.escrever(deslocamento, pedaco.texto, pedaco.cor)
+      deslocamento += pedaco.texto.length
+    }
+  }
+
+  const linhaPernas = linhas[topo + MINI_BASE.length]
+  if (linhaPernas) {
+    let deslocamento = x
+    for (const pedaco of MINI_PERNAS[passada % MINI_PERNAS.length]) {
+      linhaPernas.escrever(deslocamento, pedaco.texto, pedaco.cor)
+      deslocamento += pedaco.texto.length
+    }
+  }
+}
+
 /**
  * Cria o motor da cena com o robô andando na chuva.
  *
+ * O robô grande é o **orquestrador**; cada subagente em execução ganha um
+ * **robô pequeno** que entra atrás dele, andando junto (mesma trilha).
+ *
  * @param {number} largura colunas do quadro
- * @returns {{passo: () => void, quadro: () => Array<Array<{cor: string, texto: string}>>, colunas: number}}
+ * @returns {{
+ *   passo: () => void,
+ *   definirSubagentes: (n: number) => void,
+ *   quadro: () => Array<Array<{cor: string, texto: string}>>,
+ *   colunas: number
+ * }}
  */
 export function criarCena(largura) {
   const total = Math.max(24, Math.floor(largura))
   let t = 0
-  let x = -LARGURA_ROBO
+  let posicao = 0
   let passada = 0
+  let subagentes = 0
 
   // gotas de chuva espalhadas pelo quadro
   const gotas = []
@@ -231,12 +309,14 @@ export function criarCena(largura) {
   /** Avança um quadro. */
   function passo() {
     t++
-    if (t % QUADROS_POR_PASSO === 0) {
-      x++
-      // saiu pela direita: volta a entrar pela esquerda
-      if (x > total + 2) x = -LARGURA_ROBO
-    }
+    if (t % QUADROS_POR_PASSO === 0) posicao++
     if (t % QUADROS_POR_PASSADA === 0) passada++
+  }
+
+  /** Ajusta quantos robôs pequenos (subagentes) estão na cena. */
+  function definirSubagentes(quantidade) {
+    const n = Math.floor(Number(quantidade) || 0)
+    subagentes = Math.max(0, Math.min(MAX_SUBAGENTES, n))
   }
 
   /** Quadro completo. */
@@ -252,12 +332,38 @@ export function criarCena(largura) {
     desenharChuva(linhas, gotas, t)
     desenharChao(linhas[LINHA_CHAO], t)
     desenharMolhado(linhas[LINHA_CHAO + 1], t)
-    desenharRobo(linhas, x, passada, passada % 2)
+
+    // subagentes: espalhados pela largura visível, andando junto com o chefe
+    if (subagentes > 0) {
+      const espaco = Math.max(
+        ESPACO_MINIMO,
+        Math.floor(total / (subagentes + 1)),
+      )
+      for (let i = 0; i < subagentes; i++) {
+        const x = posicaoNaTrilha(
+          posicao + (i + 1) * espaco,
+          total,
+          LARGURA_MINI,
+        )
+        const minhaPassada = passada + i
+        const topo = LINHA_CHAO - ALTURA_MINI + 1 - (minhaPassada % 2)
+        desenharMini(linhas, x, topo, minhaPassada)
+      }
+    }
+
+    // o orquestrador (robô grande) é desenhado por último: fica na frente
+    const xRobo = posicaoNaTrilha(posicao, total, LARGURA_ROBO)
+    desenharRobo(linhas, xRobo, passada, passada % 2)
 
     return linhas.map((linha) => linha.segmentos())
   }
 
-  return { passo: passo, quadro: quadro, colunas: total }
+  return {
+    passo: passo,
+    definirSubagentes: definirSubagentes,
+    quadro: quadro,
+    colunas: total,
+  }
 }
 
 /**
