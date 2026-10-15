@@ -1,0 +1,51 @@
+{
+  "name": "opencode-painel-retro",
+  "version": "1.0.0",
+  "description": "Plugin de TUI para o OpenCode: painel OPENCODE (branch + pasta), robo cyberpunk andando na chuva neon enquanto o modelo trabalha e banner ASCII quando a sessao fica ociosa.",
+  "type": "module",
+  "license": "MIT",
+  "author": "Wilian Stancke",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/stancke/opencode-painel-retro.git"
+  },
+  "homepage": "https://github.com/stancke/opencode-painel-retro",
+  "bugs": {
+    "url": "https://github.com/stancke/opencode-painel-retro/issues"
+  },
+  "keywords": [
+    "opencode",
+    "opencode-plugin",
+    "tui",
+    "ascii-art",
+    "cyberpunk",
+    "neon",
+    "terminal"
+  ],
+  "exports": {
+    ".": "./index.ts",
+    "./tui": "./tui.tsx"
+  },
+  "files": [
+    "index.ts",
+    "tui.tsx",
+    "animacao.ts",
+    "config.json",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "verificar": "node verificar.mjs"
+  },
+  "dependencies": {
+    "@opencode/plugin": "latest"
+  },
+  "peerDependencies": {
+    "@opentui/core": ">=0.5.8",
+    "@opentui/solid": ">=0.5.8",
+    "solid-js": ">=1.9.0"
+  },
+  "devDependencies": {
+    "@babel/parser": "^7.24.0"
+  }
+}

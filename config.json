@@ -1,0 +1,6 @@
+{
+  "_comentario": "Opções do painel-retro (todas são OPCIONAIS). escalaBanner: 1 = banner de espera pequeno (padrão), 2 = dobrado. fps: ms por quadro da animação (60..1000). animacao: false desliga o robô e o banner.",
+  "escalaBanner": 1,
+  "fps": 140,
+  "animacao": true
+}
