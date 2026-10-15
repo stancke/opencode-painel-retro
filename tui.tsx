@@ -80,7 +80,15 @@ type MensagemSessao = {
 type ModeloInfo = {
   providerID?: string
   id?: string
+  modelID?: string
   limit?: { context?: number }
+}
+
+/** Referência do modelo selecionado no prompt (o campo pode vir como `id` ou `modelID`). */
+type ModeloAtual = {
+  providerID?: string
+  id?: string
+  modelID?: string
 }
 
 /** Item da fila de entrada (Session.Inbox.*). */
@@ -231,13 +239,20 @@ function BarraContexto(props: { sessionID: string }) {
   /** Limite de contexto do modelo selecionado (Model.Info.limit.context). */
   const limite = createMemo(() => {
     try {
-      const atual = context.ui.model.current()
+      // o ref do prompt vem como { providerID, modelID } — aceitamos as duas formas
+      const atual = context.ui.model.current() as unknown as
+        | ModeloAtual
+        | undefined
       if (!atual) return 0
       const local = context.location ?? context.data.location.default()
       const modelos = (context.data.location.model.list(local) ??
         []) as ModeloInfo[]
       const achado = modelos.find(
-        (m) => m.providerID === atual.providerID && m.id === atual.id,
+        (m) =>
+          m.providerID === atual.providerID &&
+          (m.id === atual.id ||
+            m.id === atual.modelID ||
+            m.modelID === atual.id),
       )
       return achado?.limit?.context ?? 0
     } catch {

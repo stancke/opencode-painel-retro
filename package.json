@@ -1,6 +1,6 @@
 {
   "name": "opencode-painel-retro",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Plugin de TUI para o OpenCode: painel OPENCODE (branch + pasta), robo cyberpunk andando na chuva neon enquanto o modelo trabalha e banner ASCII quando a sessao fica ociosa.",
   "type": "module",
   "license": "MIT",
