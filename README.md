@@ -95,19 +95,22 @@ Depois é só abrir (ou reiniciar) o OpenCode. Não precisa `npm install`, build
 ## ⚙️ Configuração
 
 Todas as opções são opcionais. Crie o arquivo **na pasta do plugin**:
+`.opencode/plugins/painel-retro/config.json` (ou `~/.config/opencode/plugins/painel-retro/config.json`).
+A pasta pode se chamar `painel-retro` **ou** `opencode-painel-retro` (o nome do clone).
 
-`.opencode/plugins/painel-retro/config.json` (ou `~/.config/opencode/plugins/painel-retro/config.json`)
+⚠️ O arquivo é **JSON puro**: comentários `//` quebram o `JSON.parse` e o plugin cai
+silenciosamente nos padrões (use o campo `_comentario` para anotar).
 
-```jsonc
+```json
 {
-  "escalaBanner": 1,   // tamanho do "AGUARDANDO COMANDOS...": 1 (padrão) ou 2
-  "fps": 140,          // ms por quadro da animação (60..1000)
-  "animacao": true,    // false desliga o robô/banner
-  "contexto": true,    // barra de uso do contexto
-  "git": true,         // status do git (✚novos ~alterados -removidos)
-  "intervaloGit": 5000,// ms entre cada `git status` (1000..120000)
-  "cronometro": true,  // cronômetro do turno + subagentes
-  "bloqueio": true     // aviso de permissão/pergunta/fila
+  "escalaBanner": 1,
+  "fps": 140,
+  "animacao": true,
+  "contexto": true,
+  "git": true,
+  "intervaloGit": 5000,
+  "cronometro": true,
+  "bloqueio": true
 }
 ```
 

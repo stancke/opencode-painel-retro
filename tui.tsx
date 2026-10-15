@@ -711,14 +711,17 @@ export default Plugin.define({
         ? fpsPedido
         : INTERVALO_PADRAO
     // escala do banner de espera: 1 (padrão, menor) ou 2 (dobrado)
-    const escalaBanner = Number(config.escalaBanner) === 2 ? 2 : 1
+    const escalaBanner =
+      Number(config.escalaBanner ?? opcoes.escalaBanner) === 2 ? 2 : 1
 
     // itens extras do painel (todos ligados por padrão)
-    const mostrarContexto = config.contexto !== false
-    const mostrarGit = config.git !== false
-    const mostrarCronometro = config.cronometro !== false
-    const mostrarBloqueio = config.bloqueio !== false
-    const gitPedido = Number(config.intervaloGit)
+    // valem tanto no config.json quanto em `options` (config de plugins)
+    const mostrarContexto = config.contexto !== false && opcoes.contexto !== false
+    const mostrarGit = config.git !== false && opcoes.git !== false
+    const mostrarCronometro =
+      config.cronometro !== false && opcoes.cronometro !== false
+    const mostrarBloqueio = config.bloqueio !== false && opcoes.bloqueio !== false
+    const gitPedido = Number(config.intervaloGit ?? opcoes.intervaloGit)
     const intervaloGit =
       Number.isFinite(gitPedido) && gitPedido >= 1000 && gitPedido <= 120000
         ? gitPedido
