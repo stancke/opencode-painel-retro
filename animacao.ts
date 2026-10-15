@@ -14,14 +14,14 @@
  * `quadro()`/`quadroAguardando()` devolvem linhas compostas de SEGMENTOS com uma
  * chave de cor, para o plugin pintar cada pedaço com um token do tema:
  *
- *   ceu | estrela | robo | olho | antena | chao | banner | pontos
+ *   ceu | chuva | agua | robo | olho | antena | chao | banner | pontos
  */
 
 /** Total de linhas do quadro. */
-export const LINHAS_CENA = 8
+export const LINHAS_CENA = 6
 
 /** Linha do chão. */
-const LINHA_CHAO = 6
+const LINHA_CHAO = 4
 
 /** Quadros entre cada coluna andada (velocidade do robô). */
 const QUADROS_POR_PASSO = 2
@@ -36,15 +36,19 @@ const MARCA_CHAO = "▪"
 const LARGURA_ROBO = 15
 
 /** Altura do sprite do robô. */
-const ALTURA_ROBO = 5
+const ALTURA_ROBO = 4
 
 /**
- * Robô quadrado (visto de frente) — linhas 0 a 3. O visor tem cor própria.
+ * Robô quadrado (visto de frente) — linhas 0 a 2 (a antena vai embutida no
+ * topo da cabeça). O visor e a antena têm cor própria.
  * Cada linha é uma lista de segmentos `{ cor, texto }`, todas com 15 colunas.
  */
 const ROBO_BASE = [
-  [{ cor: "antena", texto: "       ▲       " }],
-  [{ cor: "robo", texto: "   ┌───────┐   " }],
+  [
+    { cor: "robo", texto: "   ┌──" },
+    { cor: "antena", texto: "▲" },
+    { cor: "robo", texto: "──┐   " },
+  ],
   [
     { cor: "robo", texto: "   │█ " },
     { cor: "olho", texto: "▀▀▀" },
@@ -53,7 +57,7 @@ const ROBO_BASE = [
   [{ cor: "robo", texto: "  ┌┴███████┴┐  " }],
 ]
 
-/** Pernas (linha 4): duas poses que alternam a cada passada. */
+/** Pernas (última linha do sprite): duas poses que alternam a cada passada. */
 const PERNAS = [
   [{ cor: "robo", texto: "     ▐█ █▌     " }],
   [{ cor: "robo", texto: "     ▐▙ ▟▌     " }],
@@ -163,7 +167,7 @@ function desenharMolhado(linha, t) {
 
 /** Braço: duas células na vertical, alternando para cima/para baixo. */
 function desenharBraco(linhas, x, coluna, topo, levantado) {
-  const inicio = topo + (levantado ? 2 : 3)
+  const inicio = topo + (levantado ? 1 : 2)
   for (let k = 0; k < 2; k++) {
     const linha = linhas[inicio + k]
     if (linha) linha.por(x + coluna, coluna < 7 ? BRACO_ESQ : BRACO_DIR, "robo")
@@ -172,7 +176,8 @@ function desenharBraco(linhas, x, coluna, topo, levantado) {
 
 /** Desenha o robô na posição `x`, com a passada atual e o balanço do corpo. */
 function desenharRobo(linhas, x, passada, balanco) {
-  const topo = 1 + balanco // com o balanço, o robô desce 1 linha (pisa no chão)
+  // pé no chão quando o balanço é 0; 1 linha acima quando o balanço é 1
+  const topo = LINHA_CHAO - ALTURA_ROBO + 1 - balanco
 
   for (let i = 0; i < ROBO_BASE.length; i++) {
     const linha = linhas[topo + i]
@@ -239,16 +244,7 @@ export function criarCena(largura) {
     const linhas = []
     // a cor-padrão de cada linha é a cor dominante dela: assim células vazias
     // se fundem com o desenho e o quadro gera poucos segmentos (menos nós)
-    const padrao = [
-      "chuva",
-      "chuva",
-      "chuva",
-      "chuva",
-      "chuva",
-      "chuva",
-      "chao",
-      "agua",
-    ]
+    const padrao = ["chuva", "chuva", "chuva", "chuva", "chao", "agua"]
     for (let i = 0; i < LINHAS_CENA; i++) {
       linhas.push(criarLinha(total, padrao[i]))
     }
@@ -265,28 +261,28 @@ export function criarCena(largura) {
 }
 
 /**
- * Fonte de blocos (5 linhas) usada no banner de espera.
+ * Fonte de blocos (3 linhas) usada no banner de espera.
  * Só as letras necessárias para "AGUARDANDO COMANDOS".
  */
 const FONTE = {
-  A: [" ██ ", "█  █", "████", "█  █", "█  █"],
-  C: [" ███", "█   ", "█   ", "█   ", " ███"],
-  D: ["████ ", "█   █", "█   █", "█   █", "████ "],
-  G: [" ████", "█    ", "█  ██", "█   █", " ███ "],
-  M: ["█   █", "██ ██", "█ █ █", "█   █", "█   █"],
-  N: ["█   █", "██  █", "█ █ █", "█  ██", "█   █"],
-  O: [" ███ ", "█   █", "█   █", "█   █", " ███ "],
-  R: ["████ ", "█   █", "████ ", "█  █ ", "█   █"],
-  S: [" ████", "█    ", " ███ ", "    █", "████ "],
-  U: ["█   █", "█   █", "█   █", "█   █", " ███ "],
-  " ": ["  ", "  ", "  ", "  ", "  "],
+  A: ["▄▀▄", "█▀█", "▀ ▀"],
+  C: ["▄▀▀", "█  ", "▀▀▀"],
+  D: ["█▀▄", "█ █", "▀▀ "],
+  G: ["▄▀▀", "█ █", "▀▀▀"],
+  M: ["█▄ ▄█", "█ █ █", "█   █"],
+  N: ["█  █", "█▄ █", "█ ▀█"],
+  O: ["▄▀▄", "█ █", "▀▀▀"],
+  R: ["█▀▄", "█▀▀", "▀ ▀"],
+  S: ["▄▀▀", "▀▀▄", "▀▀▀"],
+  U: ["█ █", "█ █", "▀▀▀"],
+  " ": ["  ", "  ", "  "],
 }
 
 /** Ponto do "..." (só na última linha). */
-const GLIFO_PONTO = [" ", " ", " ", " ", "█"]
+const GLIFO_PONTO = [" ", " ", "▄"]
 
 /** Altura da fonte de blocos. */
-const ALTURA_FONTE = 5
+const ALTURA_FONTE = 3
 
 /** Texto do banner de espera. */
 export const TEXTO_ESPERA = "AGUARDANDO COMANDOS"
